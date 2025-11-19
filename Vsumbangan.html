@@ -15,12 +15,56 @@
 
     /* ====== CARD / LIST STYLE (tambahan, tidak merusak style lama) ====== */
     .leaderboard-list { display:flex; flex-direction:column; gap:15px; margin-top:18px; }
-    .donation-item { background:#fff8dc; border:2px solid #f7b500; padding:15px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; gap:15px; transition:0.18s; }
+    .donation-item {
+      background:#fff8dc;
+      border:2px solid #f7b500;
+      padding:15px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      transition:0.18s;
+    }
     .donation-item:hover { background:#fff3b0; transform:scale(1.02); }
-    .rank-number { font-family:minecraft; font-size:28px; width:56px; text-align:center; color:#f7b500; flex:0 0 56px; }
-    .donation-info { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; }
-    .donation-name { font-size:16px; font-weight:700; color:#333; word-break:break-word; }
-    .donation-total { color:#0a7a00; font-size:15px; font-weight:800; margin-top:4px; text-align:right; }
+
+    .rank-number {
+      font-family:minecraft;
+      font-size:28px;
+      width:56px;
+      text-align:center;
+      color:#f7b500;
+      flex:0 0 56px;
+    }
+
+    .donation-info {
+      display:flex;
+      flex-direction:column;
+      flex:1 1 auto;
+      min-width:0; /* penting untuk membuat ellipsis bekerja pada flex children */
+      margin-right:12px;
+    }
+
+    /* NAMA: paksa single-line + ellipsis */
+    .donation-name {
+      font-size:16px;
+      font-weight:700;
+      color:#333;
+
+      white-space: nowrap;      /* jangan pindah baris */
+      overflow: hidden;         /* potong jika overflow */
+      text-overflow: ellipsis;  /* tampilkan ... */
+      max-width: 520px;         /* batas lebar pada desktop (sesuaikan bila perlu) */
+    }
+
+    .donation-total {
+      color:#0a7a00;
+      font-size:15px;
+      font-weight:800;
+      margin-top:4px;
+      text-align:right;
+      min-width:120px;
+    }
 
     /* small controls area (filter + refresh only) */
     .controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
@@ -28,9 +72,18 @@
 
     /* responsive cards */
     @media(max-width:640px){
-      .donation-item { padding:12px; flex-direction:column; align-items:flex-start; }
-      .rank-number { font-size:24px; width:48px; }
-      .donation-total { align-self:flex-end; }
+      .donation-item {
+        padding:12px;
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .rank-number { font-size:24px; width:48px; flex:0 0 48px; }
+      .donation-total { align-self:flex-end; min-width:0; }
+
+      /* biarkan nama tetap satu baris tetapi gunakan lebar penuh yang tersisa */
+      .donation-name {
+        max-width: 100%;
+      }
     }
   </style>
 </head>

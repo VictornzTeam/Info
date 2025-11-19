@@ -76,7 +76,7 @@
   <div class="main-area">
     <div class="container page-header">
       <h1>Leaderboard Sumbangan</h1>
-      <p class="hint">Sumber: Google Sheet — menampilkan Nama dan Total Sumbangan (kolom M).</p>
+      <p class="hint">Sumber: Google Sheet — menampilkan Nama dan Total Sumbangan (kolom B pada sheet Anda).</p>
 
       <div class="controls" style="margin-bottom:12px;">
         <label>Top:
@@ -129,7 +129,7 @@
   })();
 })();
 
-/* ========== CONFIG: gunakan GViz URL sheetmu (sudah sesuai link) ========== */
+/* ========== CONFIG: gunakan GViz URL sheet Anda (sudah sesuai screenshot) ========== */
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1yYP89ep0aNEXjd8RHuf_jFsXPWpXUkSBVy_DyqtU6eM/gviz/tq?gid=91664058&tqx=out:json";
 
 /* helper parse GViz response */
@@ -143,51 +143,70 @@ function tableToObjects(table){
     const obj = {};
     r.c.forEach((cell,i)=>{
       const key = cols[i] || `col${i}`;
-      obj[key] = (cell && cell.v !== undefined) ? cell.v : "";
+      obj[key] = (cell && (cell.v !== undefined)) ? cell.v : "";
     });
     return obj;
   });
 }
 
-function detectFields(cols){
-  const norm = cols.map(c => (c||'').toString().trim().toLowerCase().replace(/[^\w\s\(\)]/g,''));
+/* detect fields tuned for your sheet (Nama = kolom pertama, Total = kolom kedua) */
+function detectFields(cols, rowsSample){
+  const lower = cols.map(c => (c||'').toString().trim().toLowerCase());
+  // prefer exact header matches 'nama' and 'total'
   let nameKey = null, mKey = null;
-  const nameCandidates = ['nama','pemilik','donatur','name'];
-  const totalCandidates = ['total sumbangan','total sumbangan (m)','total sumbangan m','total (m)','m','total','jumlah','nominal','sumbangan'];
+  for (let i=0;i<lower.length;i++){
+    if (!nameKey && lower[i] === 'nama') nameKey = cols[i];
+    if (!mKey && (lower[i] === 'total' || lower[i] === 'total (m)')) mKey = cols[i];
+  }
 
-  for (let i=0;i<norm.length;i++){
-    const v = norm[i];
-    if (!nameKey) {
-      for (const cand of nameCandidates) {
-        if (v === cand || v.includes(cand + ' ') || v.includes(' ' + cand) || v.indexOf(cand) !== -1) {
-          nameKey = cols[i];
-          break;
+  // If both found, return immediately
+  if (nameKey && mKey) return { nameKey, mKey };
+
+  // Fallback 1: if at least 'nama' found, use that and try numeric detection for total
+  if (!nameKey) {
+    for (let i=0;i<lower.length;i++){
+      if (lower[i].includes('nama')) { nameKey = cols[i]; break; }
+    }
+  }
+
+  // Fallback 2: prefer columns by positional inference from your screenshot:
+  // - Nama likely column A (index 0)
+  // - Total likely column B (index 1)
+  if (!nameKey && cols.length >= 1) nameKey = cols[0];
+  if (!mKey && cols.length >= 2) mKey = cols[1];
+
+  // Additional improvement: if mKey seems empty, scan sample rows to find numeric column
+  if (rowsSample && rowsSample.length){
+    const scores = new Array(cols.length).fill(0);
+    rowsSample.forEach(r=>{
+      for (let i=0;i<cols.length;i++){
+        const k = cols[i] || `col${i}`;
+        const v = r[k];
+        if (v !== undefined && v !== null && v !== '') {
+          const n = parseNumber(v);
+          if (n && Math.abs(n) > 0) scores[i] += 1;
         }
       }
+    });
+    // pick best numeric column if it looks better than current mKey
+    let bestIdx = -1, bestScore = 0;
+    for (let i=0;i<scores.length;i++){
+      if (scores[i] > bestScore) { bestScore = scores[i]; bestIdx = i; }
     }
-    if (!mKey) {
-      for (const cand of totalCandidates) {
-        if (v === cand || v.indexOf(cand) !== -1) {
-          mKey = cols[i];
-          break;
-        }
+    if (bestIdx >= 0) {
+      const candKey = cols[bestIdx];
+      // prefer numeric candidate if our current mKey has low score
+      let currentIdx = cols.indexOf(mKey);
+      if (currentIdx === -1 || scores[bestIdx] > (scores[currentIdx] || 0)) {
+        mKey = candKey;
       }
     }
-    if (nameKey && mKey) break;
   }
-  if (!nameKey && cols.length >= 1) {
-    for (let i=0;i<cols.length;i++){
-      if ((cols[i]||'').toString().trim().toLowerCase().includes('nama')) { nameKey = cols[i]; break; }
-    }
-    if(!nameKey && cols[0]) nameKey = cols[0];
-  }
-  if (!mKey) {
-    for (let i=0;i<cols.length;i++){
-      const t = (cols[i]||'').toString().trim().toLowerCase();
-      if (/\(m\)/.test(t) || /\bm\)$/i.test(t) || (/\bm\b/.test(t) && t.length<=3)) { mKey = cols[i]; break; }
-    }
-    if(!mKey && cols.length) mKey = cols[cols.length-1];
-  }
+
+  // final safety: if still missing, ensure not undefined
+  if (!nameKey && cols.length) nameKey = cols[0];
+  if (!mKey && cols.length) mKey = cols[Math.min(1, cols.length-1)];
+
   return { nameKey, mKey };
 }
 
@@ -291,10 +310,19 @@ async function loadDonors(){
 
     const rows = tableToObjects(json.table);
     const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim());
-    const { nameKey, mKey } = detectFields(cols);
+
+    // debug: lihat apa yang diterima dari Google
+    console.log('GViz cols:', cols);
+    console.log('GViz sample rows:', rows.slice(0,6));
+
+    // beri sample kecil ke detector supaya bisa memilih kolom numeric bila header ambiguous
+    const sample = rows.slice(0,10);
+    const { nameKey, mKey } = detectFields(cols, sample);
+
+    console.log('Detected nameKey:', nameKey, 'mKey:', mKey);
 
     if (!nameKey || !mKey) {
-      result.innerHTML = `<div class="error">Gagal deteksi kolom. Header ditemukan: <br><small style="color:#333">${cols.join(' | ')}</small><br>Pastikan ada kolom Nama dan kolom M/Total.</div>`;
+      result.innerHTML = `<div class="error">Gagal deteksi kolom. Header ditemukan: <br><small style="color:#333">${cols.join(' | ')}</small><br>Pastikan header 'Nama' dan 'Total' ada di baris pertama.</div>`;
       return;
     }
 
@@ -347,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (refreshBtn) refreshBtn.addEventListener('click', loadDonors);
   if (topCount) topCount.addEventListener('change', loadDonors);
-  if (filterName) filterName.addEventListener('input', () => { /* debounce simple */ setTimeout(loadDonors, 120); });
+  if (filterName) filterName.addEventListener('input', () => { setTimeout(loadDonors, 120); });
   if (tableBtn) tableBtn.addEventListener('click', () => setViewMode('table'));
   if (cardBtn) cardBtn.addEventListener('click', () => setViewMode('cards'));
 

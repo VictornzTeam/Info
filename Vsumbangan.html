@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Leaderboard Sumbangan — Victornz</title>
+  <link rel="stylesheet" href="Vsumbangan.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">Victornz</div>
+    <nav class="nav">
+      <a href="home.html">Home</a>
+      <a href="tentang.html">Tentang</a>
+      <a href="kontak.html">Kontak</a>
+      <a href="Vsumbangan.html" class="active">Leaderboard</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <h1>Leaderboard Sumbangan</h1>
+  <p class="hint">Data otomatis diambil dari Google Sheet.</p>
+
+  <div class="controls">
+    <label>Top:
+      <select id="topCount">
+        <option>5</option><option>10</option><option selected>20</option><option>50</option>
+      </select>
+    </label>
+
+    <label>Filter Nama:
+      <input id="filterName" placeholder="ketik nama...">
+    </label>
+
+    <button id="refreshBtn">Refresh</button>
+  </div>
+
+  <div id="leaderboard" class="leaderboard">
+    <div class="loading">Memuat data...</div>
+  </div>
+
+  <div id="debug" style="display:none;"></div>
+</main>
+
+<script>
+/* === CONFIG === */
+const SHEET_ID = "1yYP89ep0aNEXjd8RHuf_jFsXPWpXUkSBVy_DyqtU6eM";
+let GID = "0";
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
+
+/* === Helper Functions === */
+function parseGviz(text){
+  const jsonText = text.replace(/^[^\{]*/, "").replace(/\);?$/, "");
+  return JSON.parse(jsonText);
+}
+function tableToObjects(table){
+  const cols = table.cols.map(c => c.label || c.id);
+  return table.rows.map(r => {
+    const obj = {};
+    r.c.forEach((cell, i)=>{
+      obj[cols[i]] = cell ? cell.v : "";
+    });
+    return obj;
+  });
+}
+function detectFields(cols){
+  const low = cols.map(c => c.toLowerCase());
+  let nameKey = cols.find(c => c.toLowerCase().includes("nama")) || cols[1];
+  let amountKey = cols.find(c => c.toLowerCase().includes("sumbang") || c.toLowerCase() === "m") || cols[2];
+  return {nameKey, amountKey};
+}
+function parseAmount(val){
+  if(!val) return 0;
+  let s = String(val).replace(/[^0-9,.-]/g,"");
+  s = s.replace(/,/g,".");
+  return parseFloat(s) || 0;
+}
+function aggregateRows(rows, nameKey, amountKey){
+  const map = new Map();
+  rows.forEach(r=>{
+    const name = String(r[nameKey]).trim();
+    if(!name) return;
+    const amt = parseAmount(r[amountKey]);
+    if(!map.has(name)) map.set(name,{name,total:0,count:0});
+    let o = map.get(name);
+    o.total += amt;
+    o.count++;
+  });
+  return [...map.values()].sort((a,b)=>b.total - a.total);
+}
+function formatCurrency(n){
+  return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(n);
+}
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
+/* === Render Leaderboard === */
+function renderLeaderboard(data, topN, filter){
+  const el = document.getElementById("leaderboard");
+  el.innerHTML = "";
+
+  const filtered = filter ? data.filter(d=>d.name.toLowerCase().includes(filter.toLowerCase())) : data;
+  const list = filtered.slice(0, topN);
+
+  const wrap = document.createElement("div");
+  wrap.className = "lb-list";
+
+  list.forEach((d, i)=>{
+    const row = document.createElement("div");
+    row.className = "lb-row";
+
+    row.innerHTML = `
+      <div class="rank">${i+1}</div>
+      <div class="meta">
+        <div class="name">${escapeHtml(d.name)}</div>
+        <div class="sub">Entri: ${d.count}</div>
+      </div>
+      <div class="amount">${formatCurrency(d.total)}</div>
+    `;
+    wrap.appendChild(row);
+  });
+
+  el.appendChild(wrap);
+}
+
+/* === Main Loader === */
+async function loadAndRender(){
+  const el = document.getElementById("leaderboard");
+  el.innerHTML = "<div class='loading'>Memuat data...</div>";
+
+  try{
+    const res = await fetch(SHEET_URL);
+    const txt = await res.text();
+    const json = parseGviz(txt);
+
+    const rows = tableToObjects(json.table);
+    const cols = json.table.cols.map(c=>c.label);
+
+    const {nameKey, amountKey} = detectFields(cols);
+
+    const agg = aggregateRows(rows, nameKey, amountKey);
+
+    const top = parseInt(document.getElementById("topCount").value);
+    const filter = document.getElementById("filterName").value.trim();
+
+    renderLeaderboard(agg, top, filter);
+
+  } catch(err){
+    el.innerHTML = `<div class="error">Gagal memuat: ${err.message}</div>`;
+  }
+}
+
+/* === Events === */
+document.addEventListener("DOMContentLoaded", ()=>{
+  document.getElementById("refreshBtn").onclick = loadAndRender;
+  document.getElementById("topCount").onchange = loadAndRender;
+  document.getElementById("filterName").oninput = loadAndRender;
+
+  loadAndRender();
+});
+</script>
+</body>
+</html>

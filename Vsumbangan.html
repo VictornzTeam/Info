@@ -1,167 +1,364 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Leaderboard Sumbangan — Victornz</title>
-  <link rel="stylesheet" href="Vsumbangan.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Vsumbangan — Victornz</title>
+  <!-- tetap memakai tema lama -->
+  <link rel="stylesheet" href="list.css">
+  <style>
+    /* override kecil supaya layout rapi (tidak mengubah tampilan utama) */
+    .container { max-width:1100px; margin:82px auto; padding:0 18px; }
+    h1{ font-family: minecraft, sans-serif; color:#d17f08; margin:0 0 8px; }
+    #donorTable { margin-top:18px; width:100%; border-collapse:collapse; }
+    #donorTable th, #donorTable td { padding:10px 12px; text-align:left; border-bottom:1px solid #eee; }
+    #donorTable th { background:#fffbea; color:#a06d00; font-weight:800; }
+    .loading, .error { padding:20px; text-align:center; color:#666; }
+    .amount { color:#0a7a00; font-weight:800; text-align:right; }
+    @media(max-width:640px){
+      #donorTable th, #donorTable td { padding:8px; font-size:14px; }
+    }
+    /* ensure sidebar active link style same as other pages */
+    .sidebar-menu a.active { background-color:#2b2b2b; border-left:4px solid #f7b500; color:#f7b500; }
+
+    /* ====== CARD / LIST STYLE (tambahan, tidak merusak style lama) ====== */
+    .leaderboard-list { display:flex; flex-direction:column; gap:15px; margin-top:18px; }
+    .donation-item { background:#fff8dc; border:2px solid #f7b500; padding:15px; border-radius:12px; display:flex; align-items:center; gap:15px; transition:0.18s; }
+    .donation-item:hover { background:#fff3b0; transform:scale(1.02); }
+    .rank-number { font-family:minecraft; font-size:28px; width:56px; text-align:center; color:#f7b500; }
+    .donation-info { display:flex; flex-direction:column; }
+    .donation-name { font-size:16px; font-weight:700; color:#333; }
+    .donation-total { color:#0a7a00; font-size:15px; font-weight:800; margin-top:4px; }
+
+    /* small controls area */
+    .controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .view-toggle { margin-left:8px; }
+    .view-toggle button { padding:6px 10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+    .view-toggle button.active { background:#f7b500; color:#2b2b2b; border-color:#f7b500; }
+
+    /* responsive cards */
+    @media(max-width:640px){
+      .donation-item { padding:12px; }
+      .rank-number { font-size:24px; width:48px; }
+    }
+  </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="wrap">
-    <div class="brand">Victornz</div>
-    <nav class="nav">
-      <a href="home.html">Home</a>
-      <a href="tentang.html">Tentang</a>
-      <a href="kontak.html">Kontak</a>
-      <a href="Vsumbangan.html" class="active">Leaderboard</a>
-    </nav>
+<!-- HEADER -->
+<div class="header">
+  <div class="menu-btn" id="menuBtn">☰</div>
+  <h2>Vsumbangan</h2>
+</div>
+
+<!-- SIDEBAR (tetap sama) -->
+<div class="sidebar" id="sidebar" aria-hidden="true">
+  <div class="sidebar-header">
+    <img src="logo.png" alt="Logo Victornz" class="sidebar-logo">
+    <h2>Victornz</h2>
   </div>
-</header>
+  <hr class="sidebar-divider">
+  <nav class="sidebar-menu" role="navigation" aria-label="Sidebar main navigation">
+    <a href="beranda.html"><img src="house.png" class="icon"><span>Beranda</span></a>
+    <a href="rules.html"><img src="book-text.png" class="icon"><span>Rules</span></a>
+    <a href="list.html"><img src="clipboard-list.png" class="icon"><span>List Member</span></a>
+    <a href="fotbar.html"><img src="camera.png" class="icon"><span>Fotbar</span></a>
+    <a href="build.html"><img src="image.png" class="icon"><span>Hasil Build</span></a>
+    <a href="skin.html"><img src="shirt.png" class="icon"><span>Pasang Skin</span></a>
+    <a href="saran.html"><img src="message-square-more.png" class="icon"><span>Saran</span></a>
+    <a href="Vsumbangan.html" id="link-sumbangan"><img src="chart-pie.png" class="icon"><span>Sumbangan</span></a>
+  </nav>
+  <div class="sidebar-footer"><p>© 2025 Victornz</p></div>
+</div>
 
-<main class="container">
-  <h1>Leaderboard Sumbangan</h1>
-  <p class="hint">Data otomatis diambil dari Google Sheet.</p>
+<!-- MAIN CONTENT -->
+<div class="content-wrap">
+  <div class="main-area">
+    <div class="container page-header">
+      <h1>Leaderboard Sumbangan</h1>
+      <p class="hint">Sumber: Google Sheet — menampilkan Nama dan Total Sumbangan (kolom M).</p>
 
-  <div class="controls">
-    <label>Top:
-      <select id="topCount">
-        <option>5</option><option>10</option><option selected>20</option><option>50</option>
-      </select>
-    </label>
+      <div class="controls" style="margin-bottom:12px;">
+        <label>Top:
+          <select id="topCount"><option>5</option><option selected>10</option><option>20</option></select>
+        </label>
+        <label style="margin-left:12px">Filter: <input id="filterName" placeholder="cari nama..."></label>
+        <div class="view-toggle" aria-hidden="false">
+          <span>View:</span>
+          <button id="viewTableBtn">Tabel</button>
+          <button id="viewCardBtn">Kartu</button>
+        </div>
+        <button id="refreshBtn" style="margin-left:12px;">Refresh</button>
+      </div>
 
-    <label>Filter Nama:
-      <input id="filterName" placeholder="ketik nama...">
-    </label>
+      <!-- tempat hasil -->
+      <div id="result">
+        <div class="loading">Memuat data...</div>
+      </div>
 
-    <button id="refreshBtn">Refresh</button>
+    </div>
   </div>
-
-  <div id="leaderboard" class="leaderboard">
-    <div class="loading">Memuat data...</div>
-  </div>
-
-  <div id="debug" style="display:none;"></div>
-</main>
+</div>
 
 <script>
-/* === CONFIG === */
-const SHEET_ID = "1yYP89ep0aNEXjd8RHuf_jFsXPWpXUkSBVy_DyqtU6eM";
-let GID = "0";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
+/* SIDEBAR TOGGLE + ACTIVE LINK (tidak mengubah tampilan) */
+(function () {
+  const menuBtn = document.getElementById('menuBtn');
+  const sidebar = document.getElementById('sidebar');
 
-/* === Helper Functions === */
+  menuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    sidebar.classList.toggle('active');
+    sidebar.setAttribute('aria-hidden', sidebar.classList.contains('active') ? 'false' : 'true');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+      sidebar.classList.remove('active');
+      sidebar.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  (function markActive(){
+    const links = document.querySelectorAll('.sidebar-menu a');
+    const current = (window.location.pathname.split('/').pop() || 'vsumbangan.html').toLowerCase();
+    links.forEach(a => {
+      const href = (a.getAttribute('href') || '').split('/').pop().toLowerCase();
+      if (href && href === current) a.classList.add('active'); else a.classList.remove('active');
+    });
+  })();
+})();
+
+/* ========== CONFIG: gunakan GViz URL sheetmu (sudah sesuai link) ========== */
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1yYP89ep0aNEXjd8RHuf_jFsXPWpXUkSBVy_DyqtU6eM/gviz/tq?gid=91664058&tqx=out:json";
+
+/* helper parse GViz response */
 function parseGviz(text){
-  const jsonText = text.replace(/^[^\{]*/, "").replace(/\);?$/, "");
+  const jsonText = text.replace(/^[^\{]*/, '').replace(/\);?$/, '');
   return JSON.parse(jsonText);
 }
 function tableToObjects(table){
-  const cols = table.cols.map(c => c.label || c.id);
-  return table.rows.map(r => {
+  const cols = table.cols.map(c => (c.label || c.id || "").toString().trim());
+  return table.rows.map(r=>{
     const obj = {};
-    r.c.forEach((cell, i)=>{
-      obj[cols[i]] = cell ? cell.v : "";
+    r.c.forEach((cell,i)=>{
+      const key = cols[i] || `col${i}`;
+      obj[key] = (cell && cell.v !== undefined) ? cell.v : "";
     });
     return obj;
   });
 }
+
 function detectFields(cols){
-  const low = cols.map(c => c.toLowerCase());
-  let nameKey = cols.find(c => c.toLowerCase().includes("nama")) || cols[1];
-  let amountKey = cols.find(c => c.toLowerCase().includes("sumbang") || c.toLowerCase() === "m") || cols[2];
-  return {nameKey, amountKey};
+  const norm = cols.map(c => (c||'').toString().trim().toLowerCase().replace(/[^\w\s\(\)]/g,''));
+  let nameKey = null, mKey = null;
+  const nameCandidates = ['nama','pemilik','donatur','name'];
+  const totalCandidates = ['total sumbangan','total sumbangan (m)','total sumbangan m','total (m)','m','total','jumlah','nominal','sumbangan'];
+
+  for (let i=0;i<norm.length;i++){
+    const v = norm[i];
+    if (!nameKey) {
+      for (const cand of nameCandidates) {
+        if (v === cand || v.includes(cand + ' ') || v.includes(' ' + cand) || v.indexOf(cand) !== -1) {
+          nameKey = cols[i];
+          break;
+        }
+      }
+    }
+    if (!mKey) {
+      for (const cand of totalCandidates) {
+        if (v === cand || v.indexOf(cand) !== -1) {
+          mKey = cols[i];
+          break;
+        }
+      }
+    }
+    if (nameKey && mKey) break;
+  }
+  if (!nameKey && cols.length >= 1) {
+    for (let i=0;i<cols.length;i++){
+      if ((cols[i]||'').toString().trim().toLowerCase().includes('nama')) { nameKey = cols[i]; break; }
+    }
+    if(!nameKey && cols[0]) nameKey = cols[0];
+  }
+  if (!mKey) {
+    for (let i=0;i<cols.length;i++){
+      const t = (cols[i]||'').toString().trim().toLowerCase();
+      if (/\(m\)/.test(t) || /\bm\)$/i.test(t) || (/\bm\b/.test(t) && t.length<=3)) { mKey = cols[i]; break; }
+    }
+    if(!mKey && cols.length) mKey = cols[cols.length-1];
+  }
+  return { nameKey, mKey };
 }
-function parseAmount(val){
-  if(!val) return 0;
-  let s = String(val).replace(/[^0-9,.-]/g,"");
-  s = s.replace(/,/g,".");
-  return parseFloat(s) || 0;
+
+/* parse angka dari variasi format */
+function parseNumber(v){
+  if (v === null || v === undefined) return 0;
+  if (typeof v === 'number') return v;
+  let s = String(v).trim();
+  if (!s) return 0;
+  s = s.replace(/\s+/g,'');
+  if (s.indexOf('.') !== -1 && s.indexOf(',') !== -1) {
+    s = s.replace(/\./g,'').replace(',', '.');
+  } else {
+    if (s.indexOf(',') !== -1 && s.indexOf('.') === -1) {
+      const parts = s.split(',');
+      if (parts[1] && parts[1].length <= 3) s = s.replace(',', '.');
+      else s = s.replace(/,/g,'');
+    } else {
+      s = s.replace(/,/g,'');
+    }
+  }
+  s = s.replace(/[^0-9\.\-]/g,'');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
 }
-function aggregateRows(rows, nameKey, amountKey){
-  const map = new Map();
-  rows.forEach(r=>{
-    const name = String(r[nameKey]).trim();
-    if(!name) return;
-    const amt = parseAmount(r[amountKey]);
-    if(!map.has(name)) map.set(name,{name,total:0,count:0});
-    let o = map.get(name);
-    o.total += amt;
-    o.count++;
+function fmtRp(n){
+  try {
+    return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Math.round(n));
+  } catch(e) { return n; }
+}
+function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+
+/* render tabel (tetap sama) */
+function renderTable(data){
+  const result = document.getElementById('result');
+  if (!data.length) { result.innerHTML = '<div class="loading">Belum ada data.</div>'; return; }
+
+  const topCount = parseInt(document.getElementById('topCount').value || 10,10);
+  const filter = (document.getElementById('filterName').value || '').toLowerCase();
+
+  const filtered = filter ? data.filter(d => d.name.toLowerCase().includes(filter)) : data;
+  const list = filtered.slice(0, topCount);
+
+  let html = `<table id="donorTable" role="table">
+    <thead><tr><th>Rank</th><th>Nama</th><th style="text-align:right">Total (M)</th></tr></thead><tbody>`;
+  list.forEach((d,i)=>{
+    html += `<tr>
+      <td>${i+1}</td>
+      <td>${escapeHtml(d.name)}</td>
+      <td class="amount">${fmtRp(d.total)}</td>
+    </tr>`;
   });
-  return [...map.values()].sort((a,b)=>b.total - a.total);
-}
-function formatCurrency(n){
-  return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(n);
-}
-function escapeHtml(s){
-  return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  html += `</tbody></table>`;
+  result.innerHTML = html;
 }
 
-/* === Render Leaderboard === */
-function renderLeaderboard(data, topN, filter){
-  const el = document.getElementById("leaderboard");
-  el.innerHTML = "";
+/* render card list (baru) */
+function renderCards(data){
+  const result = document.getElementById('result');
+  if (!data.length) { result.innerHTML = '<div class="loading">Belum ada data.</div>'; return; }
 
-  const filtered = filter ? data.filter(d=>d.name.toLowerCase().includes(filter.toLowerCase())) : data;
-  const list = filtered.slice(0, topN);
+  const topCount = parseInt(document.getElementById('topCount').value || 10,10);
+  const filter = (document.getElementById('filterName').value || '').toLowerCase();
+  const filtered = filter ? data.filter(d => d.name.toLowerCase().includes(filter)) : data;
+  const list = filtered.slice(0, topCount);
 
-  const wrap = document.createElement("div");
-  wrap.className = "lb-list";
-
-  list.forEach((d, i)=>{
-    const row = document.createElement("div");
-    row.className = "lb-row";
-
-    row.innerHTML = `
-      <div class="rank">${i+1}</div>
-      <div class="meta">
-        <div class="name">${escapeHtml(d.name)}</div>
-        <div class="sub">Entri: ${d.count}</div>
+  let html = '<div class="leaderboard-list" role="list">';
+  list.forEach((d,i)=>{
+    html += `<div class="donation-item" role="listitem">
+      <div class="rank-number">${i+1}</div>
+      <div class="donation-info">
+        <div class="donation-name">${escapeHtml(d.name)}</div>
+        <div class="donation-total">${fmtRp(d.total)}</div>
       </div>
-      <div class="amount">${formatCurrency(d.total)}</div>
-    `;
-    wrap.appendChild(row);
+    </div>`;
   });
-
-  el.appendChild(wrap);
+  html += '</div>';
+  result.innerHTML = html;
 }
 
-/* === Main Loader === */
-async function loadAndRender(){
-  const el = document.getElementById("leaderboard");
-  el.innerHTML = "<div class='loading'>Memuat data...</div>";
+/* ambil sheet, agregasi dan render */
+async function loadDonors(){
+  const result = document.getElementById('result');
+  result.innerHTML = '<div class="loading">Memuat data...</div>';
+  try {
+    const res = await fetch(SHEET_URL, { cache: 'no-store' });
+    if (!res.ok) {
+      if (res.status === 403 || res.status === 401) {
+        result.innerHTML = `<div class="error">Akses ditolak (kode ${res.status}). Pastikan Google Sheet diset "Anyone with the link — Viewer".</div>`;
+      } else {
+        result.innerHTML = `<div class="error">Gagal memuat Google Sheet (HTTP ${res.status}).</div>`;
+      }
+      throw new Error('HTTP ' + res.status);
+    }
 
-  try{
-    const res = await fetch(SHEET_URL);
     const txt = await res.text();
-    const json = parseGviz(txt);
+    let json;
+    try { json = parseGviz(txt); } catch(e) { throw new Error('Gagal parse GViz JSON: ' + e.message); }
+
+    if (!json || !json.table) throw new Error('Response GViz tidak berisi table.');
 
     const rows = tableToObjects(json.table);
-    const cols = json.table.cols.map(c=>c.label);
+    const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim());
+    const { nameKey, mKey } = detectFields(cols);
 
-    const {nameKey, amountKey} = detectFields(cols);
+    if (!nameKey || !mKey) {
+      result.innerHTML = `<div class="error">Gagal deteksi kolom. Header ditemukan: <br><small style="color:#333">${cols.join(' | ')}</small><br>Pastikan ada kolom Nama dan kolom M/Total.</div>`;
+      return;
+    }
 
-    const agg = aggregateRows(rows, nameKey, amountKey);
+    // aggregate by name
+    const map = new Map();
+    rows.forEach(r => {
+      const rawName = r[nameKey];
+      const name = rawName !== undefined && rawName !== null ? String(rawName).trim() : '';
+      if (!name) return;
+      const rawM = r[mKey] !== undefined ? r[mKey] : '';
+      const num = parseNumber(rawM);
+      const key = name.toLowerCase();
+      if (!map.has(key)) map.set(key, { name, total: 0, count: 0 });
+      const obj = map.get(key);
+      obj.total += num;
+      obj.count += 1;
+    });
 
-    const top = parseInt(document.getElementById("topCount").value);
-    const filter = document.getElementById("filterName").value.trim();
+    const arr = Array.from(map.values()).sort((a,b) => b.total - a.total);
 
-    renderLeaderboard(agg, top, filter);
+    // pilih mode view yang disimpan di localStorage
+    const view = localStorage.getItem('vsumbangan_view') || 'table';
+    if (view === 'cards') renderCards(arr); else renderTable(arr);
 
-  } catch(err){
-    el.innerHTML = `<div class="error">Gagal memuat: ${err.message}</div>`;
+  } catch (err) {
+    console.error('loadDonors error', err);
+    if (!result.innerHTML || result.innerHTML.trim() === '') {
+      result.innerHTML = `<div class="error">Gagal memuat data: ${escapeHtml(err.message)}</div>`;
+    }
   }
 }
 
-/* === Events === */
-document.addEventListener("DOMContentLoaded", ()=>{
-  document.getElementById("refreshBtn").onclick = loadAndRender;
-  document.getElementById("topCount").onchange = loadAndRender;
-  document.getElementById("filterName").oninput = loadAndRender;
+/* view toggle handlers */
+function setViewMode(mode){
+  const tableBtn = document.getElementById('viewTableBtn');
+  const cardBtn = document.getElementById('viewCardBtn');
+  localStorage.setItem('vsumbangan_view', mode);
+  if (mode === 'cards') { cardBtn.classList.add('active'); tableBtn.classList.remove('active'); }
+  else { tableBtn.classList.add('active'); cardBtn.classList.remove('active'); }
+  loadDonors();
+}
 
-  loadAndRender();
+/* event bindings */
+document.addEventListener('DOMContentLoaded', () => {
+  const refreshBtn = document.getElementById('refreshBtn');
+  const topCount = document.getElementById('topCount');
+  const filterName = document.getElementById('filterName');
+  const tableBtn = document.getElementById('viewTableBtn');
+  const cardBtn = document.getElementById('viewCardBtn');
+
+  if (refreshBtn) refreshBtn.addEventListener('click', loadDonors);
+  if (topCount) topCount.addEventListener('change', loadDonors);
+  if (filterName) filterName.addEventListener('input', () => { /* debounce simple */ setTimeout(loadDonors, 120); });
+  if (tableBtn) tableBtn.addEventListener('click', () => setViewMode('table'));
+  if (cardBtn) cardBtn.addEventListener('click', () => setViewMode('cards'));
+
+  // set initial view button active
+  const initialView = localStorage.getItem('vsumbangan_view') || 'table';
+  setTimeout(() => { setViewMode(initialView); }, 0);
+
+  loadDonors();
+  setInterval(loadDonors, 1000 * 60 * 2); // refresh 2 menit
 });
 </script>
+
 </body>
 </html>

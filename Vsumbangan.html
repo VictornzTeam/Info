@@ -10,36 +10,27 @@
     /* override kecil supaya layout rapi (tidak mengubah tampilan utama) */
     .container { max-width:1100px; margin:82px auto; padding:0 18px; }
     h1{ font-family: minecraft, sans-serif; color:#d17f08; margin:0 0 8px; }
-    #donorTable { margin-top:18px; width:100%; border-collapse:collapse; }
-    #donorTable th, #donorTable td { padding:10px 12px; text-align:left; border-bottom:1px solid #eee; }
-    #donorTable th { background:#fffbea; color:#a06d00; font-weight:800; }
     .loading, .error { padding:20px; text-align:center; color:#666; }
     .amount { color:#0a7a00; font-weight:800; text-align:right; }
-    @media(max-width:640px){
-      #donorTable th, #donorTable td { padding:8px; font-size:14px; }
-    }
-    /* ensure sidebar active link style same as other pages */
-    .sidebar-menu a.active { background-color:#2b2b2b; border-left:4px solid #f7b500; color:#f7b500; }
 
     /* ====== CARD / LIST STYLE (tambahan, tidak merusak style lama) ====== */
     .leaderboard-list { display:flex; flex-direction:column; gap:15px; margin-top:18px; }
-    .donation-item { background:#fff8dc; border:2px solid #f7b500; padding:15px; border-radius:12px; display:flex; align-items:center; gap:15px; transition:0.18s; }
+    .donation-item { background:#fff8dc; border:2px solid #f7b500; padding:15px; border-radius:12px; display:flex; align-items:center; justify-content:space-between; gap:15px; transition:0.18s; }
     .donation-item:hover { background:#fff3b0; transform:scale(1.02); }
-    .rank-number { font-family:minecraft; font-size:28px; width:56px; text-align:center; color:#f7b500; }
-    .donation-info { display:flex; flex-direction:column; }
-    .donation-name { font-size:16px; font-weight:700; color:#333; }
-    .donation-total { color:#0a7a00; font-size:15px; font-weight:800; margin-top:4px; }
+    .rank-number { font-family:minecraft; font-size:28px; width:56px; text-align:center; color:#f7b500; flex:0 0 56px; }
+    .donation-info { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; }
+    .donation-name { font-size:16px; font-weight:700; color:#333; word-break:break-word; }
+    .donation-total { color:#0a7a00; font-size:15px; font-weight:800; margin-top:4px; text-align:right; }
 
-    /* small controls area */
-    .controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .view-toggle { margin-left:8px; }
-    .view-toggle button { padding:6px 10px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; }
-    .view-toggle button.active { background:#f7b500; color:#2b2b2b; border-color:#f7b500; }
+    /* small controls area (filter + refresh only) */
+    .controls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    .controls label { display:flex; align-items:center; gap:8px; }
 
     /* responsive cards */
     @media(max-width:640px){
-      .donation-item { padding:12px; }
+      .donation-item { padding:12px; flex-direction:column; align-items:flex-start; }
       .rank-number { font-size:24px; width:48px; }
+      .donation-total { align-self:flex-end; }
     }
   </style>
 </head>
@@ -78,17 +69,9 @@
       <h1>Leaderboard Sumbangan</h1>
       <p class="hint">Sumber: Google Sheet — menampilkan Nama dan Total Sumbangan (kolom B pada sheet Anda).</p>
 
-      <div class="controls" style="margin-bottom:12px;">
-        <label>Top:
-          <select id="topCount"><option>5</option><option selected>10</option><option>20</option></select>
-        </label>
-        <label style="margin-left:12px">Filter: <input id="filterName" placeholder="cari nama..."></label>
-        <div class="view-toggle" aria-hidden="false">
-          <span>View:</span>
-          <button id="viewTableBtn">Tabel</button>
-          <button id="viewCardBtn">Kartu</button>
-        </div>
-        <button id="refreshBtn" style="margin-left:12px;">Refresh</button>
+      <div class="controls">
+        <label>Filter: <input id="filterName" placeholder="cari nama..."></label>
+        <button id="refreshBtn">Refresh</button>
       </div>
 
       <!-- tempat hasil -->
@@ -101,7 +84,7 @@
 </div>
 
 <script>
-/* SIDEBAR TOGGLE + ACTIVE LINK (tidak mengubah tampilan) */
+/* SIDEBAR TOGGLE + ACTIVE LINK (tetap sama) */
 (function () {
   const menuBtn = document.getElementById('menuBtn');
   const sidebar = document.getElementById('sidebar');
@@ -129,7 +112,7 @@
   })();
 })();
 
-/* ========== CONFIG: gunakan GViz URL sheet Anda (sudah sesuai screenshot) ========== */
+/* ========== CONFIG: gunakan GViz URL sheet Anda ========== */
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1yYP89ep0aNEXjd8RHuf_jFsXPWpXUkSBVy_DyqtU6eM/gviz/tq?gid=91664058&tqx=out:json";
 
 /* helper parse GViz response */
@@ -159,23 +142,17 @@ function detectFields(cols, rowsSample){
     if (!mKey && (lower[i] === 'total' || lower[i] === 'total (m)')) mKey = cols[i];
   }
 
-  // If both found, return immediately
   if (nameKey && mKey) return { nameKey, mKey };
 
-  // Fallback 1: if at least 'nama' found, use that and try numeric detection for total
   if (!nameKey) {
     for (let i=0;i<lower.length;i++){
       if (lower[i].includes('nama')) { nameKey = cols[i]; break; }
     }
   }
 
-  // Fallback 2: prefer columns by positional inference from your screenshot:
-  // - Nama likely column A (index 0)
-  // - Total likely column B (index 1)
   if (!nameKey && cols.length >= 1) nameKey = cols[0];
   if (!mKey && cols.length >= 2) mKey = cols[1];
 
-  // Additional improvement: if mKey seems empty, scan sample rows to find numeric column
   if (rowsSample && rowsSample.length){
     const scores = new Array(cols.length).fill(0);
     rowsSample.forEach(r=>{
@@ -188,14 +165,12 @@ function detectFields(cols, rowsSample){
         }
       }
     });
-    // pick best numeric column if it looks better than current mKey
     let bestIdx = -1, bestScore = 0;
     for (let i=0;i<scores.length;i++){
       if (scores[i] > bestScore) { bestScore = scores[i]; bestIdx = i; }
     }
     if (bestIdx >= 0) {
       const candKey = cols[bestIdx];
-      // prefer numeric candidate if our current mKey has low score
       let currentIdx = cols.indexOf(mKey);
       if (currentIdx === -1 || scores[bestIdx] > (scores[currentIdx] || 0)) {
         mKey = candKey;
@@ -203,7 +178,6 @@ function detectFields(cols, rowsSample){
     }
   }
 
-  // final safety: if still missing, ensure not undefined
   if (!nameKey && cols.length) nameKey = cols[0];
   if (!mKey && cols.length) mKey = cols[Math.min(1, cols.length-1)];
 
@@ -239,46 +213,24 @@ function fmtRp(n){
 }
 function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
 
-/* render tabel (tetap sama) */
-function renderTable(data){
-  const result = document.getElementById('result');
-  if (!data.length) { result.innerHTML = '<div class="loading">Belum ada data.</div>'; return; }
-
-  const topCount = parseInt(document.getElementById('topCount').value || 10,10);
-  const filter = (document.getElementById('filterName').value || '').toLowerCase();
-
-  const filtered = filter ? data.filter(d => d.name.toLowerCase().includes(filter)) : data;
-  const list = filtered.slice(0, topCount);
-
-  let html = `<table id="donorTable" role="table">
-    <thead><tr><th>Rank</th><th>Nama</th><th style="text-align:right">Total (M)</th></tr></thead><tbody>`;
-  list.forEach((d,i)=>{
-    html += `<tr>
-      <td>${i+1}</td>
-      <td>${escapeHtml(d.name)}</td>
-      <td class="amount">${fmtRp(d.total)}</td>
-    </tr>`;
-  });
-  html += `</tbody></table>`;
-  result.innerHTML = html;
-}
-
-/* render card list (baru) */
+/* render card list (single view) */
 function renderCards(data){
   const result = document.getElementById('result');
   if (!data.length) { result.innerHTML = '<div class="loading">Belum ada data.</div>'; return; }
 
-  const topCount = parseInt(document.getElementById('topCount').value || 10,10);
   const filter = (document.getElementById('filterName').value || '').toLowerCase();
   const filtered = filter ? data.filter(d => d.name.toLowerCase().includes(filter)) : data;
-  const list = filtered.slice(0, topCount);
 
   let html = '<div class="leaderboard-list" role="list">';
-  list.forEach((d,i)=>{
-    html += `<div class="donation-item" role="listitem">
-      <div class="rank-number">${i+1}</div>
-      <div class="donation-info">
-        <div class="donation-name">${escapeHtml(d.name)}</div>
+  filtered.forEach((d,i)=>{
+    html += `<div class="donation-item" role="listitem" aria-label="Donor ${i+1}">
+      <div style="display:flex;align-items:center;gap:12px;flex:1 1 auto;">
+        <div class="rank-number">${i+1}</div>
+        <div class="donation-info">
+          <div class="donation-name">${escapeHtml(d.name)}</div>
+        </div>
+      </div>
+      <div style="min-width:120px;text-align:right;">
         <div class="donation-total">${fmtRp(d.total)}</div>
       </div>
     </div>`;
@@ -311,14 +263,12 @@ async function loadDonors(){
     const rows = tableToObjects(json.table);
     const cols = json.table.cols.map(c => (c.label || c.id || '').toString().trim());
 
-    // debug: lihat apa yang diterima dari Google
+    // debug: lihat apa yang diterima dari Google (bisa dilihat di DevTools Console)
     console.log('GViz cols:', cols);
     console.log('GViz sample rows:', rows.slice(0,6));
 
-    // beri sample kecil ke detector supaya bisa memilih kolom numeric bila header ambiguous
     const sample = rows.slice(0,10);
     const { nameKey, mKey } = detectFields(cols, sample);
-
     console.log('Detected nameKey:', nameKey, 'mKey:', mKey);
 
     if (!nameKey || !mKey) {
@@ -343,9 +293,8 @@ async function loadDonors(){
 
     const arr = Array.from(map.values()).sort((a,b) => b.total - a.total);
 
-    // pilih mode view yang disimpan di localStorage
-    const view = localStorage.getItem('vsumbangan_view') || 'table';
-    if (view === 'cards') renderCards(arr); else renderTable(arr);
+    // render single card view
+    renderCards(arr);
 
   } catch (err) {
     console.error('loadDonors error', err);
@@ -355,33 +304,13 @@ async function loadDonors(){
   }
 }
 
-/* view toggle handlers */
-function setViewMode(mode){
-  const tableBtn = document.getElementById('viewTableBtn');
-  const cardBtn = document.getElementById('viewCardBtn');
-  localStorage.setItem('vsumbangan_view', mode);
-  if (mode === 'cards') { cardBtn.classList.add('active'); tableBtn.classList.remove('active'); }
-  else { tableBtn.classList.add('active'); cardBtn.classList.remove('active'); }
-  loadDonors();
-}
-
 /* event bindings */
 document.addEventListener('DOMContentLoaded', () => {
   const refreshBtn = document.getElementById('refreshBtn');
-  const topCount = document.getElementById('topCount');
   const filterName = document.getElementById('filterName');
-  const tableBtn = document.getElementById('viewTableBtn');
-  const cardBtn = document.getElementById('viewCardBtn');
 
   if (refreshBtn) refreshBtn.addEventListener('click', loadDonors);
-  if (topCount) topCount.addEventListener('change', loadDonors);
-  if (filterName) filterName.addEventListener('input', () => { setTimeout(loadDonors, 120); });
-  if (tableBtn) tableBtn.addEventListener('click', () => setViewMode('table'));
-  if (cardBtn) cardBtn.addEventListener('click', () => setViewMode('cards'));
-
-  // set initial view button active
-  const initialView = localStorage.getItem('vsumbangan_view') || 'table';
-  setTimeout(() => { setViewMode(initialView); }, 0);
+  if (filterName) filterName.addEventListener('input', () => { setTimeout(loadDonors, 150); });
 
   loadDonors();
   setInterval(loadDonors, 1000 * 60 * 2); // refresh 2 menit

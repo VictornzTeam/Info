@@ -5,12 +5,84 @@
   <title>Login Victornz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- UI STYLE (KUNING) -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #facc15, #fde047);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    .login-box {
+      background: white;
+      padding: 32px;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 15px 30px rgba(0,0,0,.15);
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 6px;
+      color: #92400e;
+    }
+    p {
+      color: #78350f;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: 1px solid #facc15;
+      outline: none;
+      font-size: 14px;
+    }
+    input:focus {
+      border-color: #f59e0b;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .btn-admin {
+      background: #f59e0b;
+      color: white;
+    }
+    .btn-admin:hover {
+      background: #d97706;
+    }
+    .btn-member {
+      background: #fde047;
+      color: #78350f;
+    }
+    .btn-member:hover {
+      background: #facc15;
+    }
+    .footer {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #92400e;
+    }
+  </style>
+
+  <!-- FIREBASE SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 🔥 FIREBASE CONFIG (PUNYA KAMU)
     const firebaseConfig = {
       apiKey: "AIzaSyAJjm8a7AAUjSWaeTKXI6Tr7l9HBQJttyk",
       authDomain: "victornz-database.firebaseapp.com",
@@ -24,9 +96,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    window.login = async function () {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    async function loginAs(expectedRole) {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
       if (!email || !password) {
         alert("Email dan password wajib diisi");
@@ -34,48 +106,57 @@
       }
 
       try {
-        // 🔐 LOGIN FIREBASE AUTH
         const cred = await signInWithEmailAndPassword(auth, email, password);
         const uid = cred.user.uid;
 
-        // 📦 AMBIL ROLE DARI FIRESTORE
-        const ref = doc(db, "users", uid);
-        const snap = await getDoc(ref);
-
+        const snap = await getDoc(doc(db, "users", uid));
         if (!snap.exists()) {
-          alert("Data user tidak ditemukan di Firestore");
+          alert("Data user tidak ditemukan");
           return;
         }
 
-        const userData = snap.data();
+        const { role } = snap.data();
 
-        // 🔀 REDIRECT BERDASARKAN ROLE
-        if (userData.role === "Admin") {
-          window.location.href = "DashboardAdmin.html";
-        } 
-        else if (userData.role === "Member") {
-          window.location.href = "DashboardMember.html";
-        } 
-        else {
-          alert("Role tidak dikenali");
+        // 🔐 VALIDASI ROLE SESUAI TOMBOL
+        if (role !== expectedRole) {
+          alert("Akses ditolak. Akun ini bukan " + expectedRole);
+          return;
         }
 
-      } catch (error) {
+        // 🔀 REDIRECT
+        if (role === "Admin") {
+          location.href = "DashboardAdmin.html";
+        } else {
+          location.href = "DashboardMember.html";
+        }
+
+      } catch (err) {
         alert("Login gagal: email atau password salah");
-        console.error(error);
+        console.error(err);
       }
-    };
+    }
+
+    window.loginAdmin = () => loginAs("Admin");
+    window.loginMember = () => loginAs("Member");
   </script>
 </head>
 
-<body style="font-family:Arial; padding:40px">
+<body>
 
-  <h2>Login Victornz</h2>
+  <div class="login-box">
+    <h2>Victornz</h2>
+    <p>Silakan login sesuai peran Anda</p>
 
-  <input id="email" type="email" placeholder="Email" /><br><br>
-  <input id="password" type="password" placeholder="Password" /><br><br>
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
 
-  <button onclick="login()">Login</button>
+    <button class="btn btn-admin" onclick="loginAdmin()">Login sebagai Admin</button>
+    <button class="btn btn-member" onclick="loginMember()">Login sebagai Member</button>
+
+    <div class="footer">
+      © Victornz Team
+    </div>
+  </div>
 
 </body>
 </html>

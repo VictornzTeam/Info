@@ -68,18 +68,25 @@
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   
-  const firebaseConfig = { /* SAMA */ };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAJjm8a7AAUjSWaeTKXI6Tr7l9HBQJttyk",
+    authDomain: "victornz-database.firebaseapp.com",
+    projectId: "victornz-database",
+    storageBucket: "victornz-database.appspot.com",
+    messagingSenderId: "200672722714",
+    appId: "1:200672722714:web:870346cbe0a4c0de5b76a3"
+  };
+
   const app = initializeApp(firebaseConfig);
-  
   const auth = getAuth(app);
   const db = getFirestore(app);
-  
+
   onAuthStateChanged(auth, async user => {
     if (!user) {
       location.href = "login.html";
       return;
     }
-  
+
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists() || snap.data().role !== "Admin") {
       alert("Akses ditolak");
@@ -87,18 +94,15 @@
       return;
     }
 
-    // ✅ TAMPILKAN NAMA ADMIN
-    document.getElementById("admin-name").innerText = snap.data().name;
+    document.getElementById("admin-name").innerText =
+      snap.data().name || "Admin";
   });
 
-  // 🔓 FUNGSI LOGOUT (INI YANG KURANG)
   window.logout = async function () {
     await signOut(auth);
     location.href = "login.html";
   };
 </script>
-
-
 
 </body>
 </html>

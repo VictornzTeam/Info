@@ -86,7 +86,7 @@
     const snap = await getDoc(doc(db, "users", user.uid));
     if (!snap.exists() || snap.data().role !== "Admin") {
       alert("Akses ditolak");
-      location.href = "Login.html";
+      location.href = "login.html";
     }
   });
   </script>

@@ -5,91 +5,63 @@
   <title>Login Victornz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    // 🔥 FIREBASE CONFIG (ISI MILIK KAMU)
+    const firebaseConfig = {
+      apiKey: "ISI_API_KEY",
+      authDomain: "ISI_AUTH_DOMAIN",
+      projectId: "ISI_PROJECT_ID",
+      storageBucket: "ISI_STORAGE",
+      messagingSenderId: "ISI_SENDER_ID",
+      appId: "ISI_APP_ID"
+    };
 
-  <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-  </style>
+    window.login = async function () {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+
+        const snap = await getDoc(doc(db, "users", uid));
+        if (!snap.exists()) {
+          alert("Data role tidak ditemukan");
+          return;
+        }
+
+        const user = snap.data();
+
+        // 🔀 REDIRECT SESUAI ROLE
+        if (user.role === "Admin") {
+          window.location.href = "DashboardAdmin.html";
+        } else if (user.role === "Member") {
+          window.location.href = "DashboardMember.html";
+        } else {
+          alert("Role tidak valid");
+        }
+
+      } catch (err) {
+        alert("Email atau password salah");
+      }
+    };
+  </script>
 </head>
 
-<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+<body style="font-family:Arial">
+  <h2>Login Victornz</h2>
 
-  <!-- LOGIN CARD -->
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-    
-    <div class="text-center mb-8">
-      <div class="w-16 h-16 mx-auto rounded-full bg-purple-100 flex items-center justify-center mb-4">
-        <i class="fas fa-crown text-purple-600 text-3xl"></i>
-      </div>
-      <h1 class="text-3xl font-bold text-gray-900">Victornz</h1>
-      <p class="text-gray-500 text-sm mt-1">Login Member & Admin</p>
-    </div>
+  <input id="email" type="email" placeholder="Email"><br><br>
+  <input id="password" type="password" placeholder="Password"><br><br>
 
-    <form id="loginForm" class="space-y-5">
-      <div>
-        <label class="text-sm font-semibold text-gray-700">Username</label>
-        <input id="username" type="text"
-          class="mt-1 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-          placeholder="username">
-      </div>
-
-      <div>
-        <label class="text-sm font-semibold text-gray-700">Password</label>
-        <input id="password" type="password"
-          class="mt-1 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-          placeholder="••••••••">
-      </div>
-
-      <button type="submit"
-        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition shadow-lg">
-        Masuk
-      </button>
-    </form>
-
-    <p id="loginMsg" class="text-center text-sm mt-4 text-red-500 hidden"></p>
-  </div>
-
-  <!-- SCRIPT LOGIN -->
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const u = username.value.trim();
-      const p = password.value.trim();
-      const msg = document.getElementById('loginMsg');
-
-      msg.classList.add('hidden');
-
-      if (!u || !p) {
-        msg.textContent = 'Username dan password wajib diisi';
-        msg.classList.remove('hidden');
-        return;
-      }
-
-      google.script.run
-        .withSuccessHandler(res => {
-          if (!res.success) {
-            msg.textContent = res.message;
-            msg.classList.remove('hidden');
-            return;
-          }
-
-          // Simpan session
-          sessionStorage.setItem('user', JSON.stringify(res.user));
-
-          // Redirect (ganti ke dashboard kamu)
-          window.location.href = '?page=dashboard';
-        })
-        .login(u, p);
-    });
-  </script>
-
+  <button onclick="login()">Login</button>
 </body>
 </html>

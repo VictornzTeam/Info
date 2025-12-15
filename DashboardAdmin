@@ -1,0 +1,58 @@
+<script>
+/* ==============================
+   ADMIN UI SCRIPT
+   Role: Admin
+============================== */
+
+function setupAdminUI() {
+  // Tampilkan menu Admin
+  show('menuDashboard');
+  show('menuMember');
+  show('menuData');
+  show('menuStatistik');
+  show('menuLog');
+  show('menuSetting');
+
+  // Sembunyikan menu Member-only
+  hide('menuProfilSaya');
+  hide('menuDataSaya');
+
+  // Default halaman
+  openPage('dashboard');
+
+  console.log('Admin UI Loaded');
+}
+
+/* ==============================
+   PAGE HANDLER
+============================== */
+function openPage(page) {
+  hideAllPages();
+
+  if (page === 'dashboard') show('pageDashboard');
+  if (page === 'member') show('pageMember');
+  if (page === 'data') show('pageData');
+  if (page === 'statistik') show('pageStatistik');
+  if (page === 'log') show('pageLog');
+  if (page === 'setting') show('pageSetting');
+}
+
+/* ==============================
+   HELPER
+============================== */
+function show(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'block';
+}
+
+function hide(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+function hideAllPages() {
+  document.querySelectorAll('.page').forEach(p => {
+    p.style.display = 'none';
+  });
+}
+</script>

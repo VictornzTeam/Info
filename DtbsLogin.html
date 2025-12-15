@@ -1,572 +1,95 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Victornz Dashboard</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        victor: {
-                            50: '#f5f3ff',
-                            100: '#ede9fe',
-                            500: '#8b5cf6',
-                            600: '#7c3aed',
-                            700: '#6d28d9',
-                            800: '#5b21b6',
-                            900: '#4c1d95',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* Hide scrollbar for IE, Edge and Firefox */
-        .no-scrollbar { -ms-overflow-style: none;  scrollbar-width: none; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Login Victornz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-800 antialiased h-screen overflow-hidden">
 
-    <!-- ================= NOTIFIKASI TOAST ================= -->
-    <div id="toast" class="fixed top-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl transform translate-x-full transition-transform duration-300 z-50 flex items-center gap-3">
-        <i class="fas fa-info-circle text-victor-400"></i>
-        <span id="toast-message">Pesan notifikasi</span>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+
+  <!-- LOGIN CARD -->
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+    
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 mx-auto rounded-full bg-purple-100 flex items-center justify-center mb-4">
+        <i class="fas fa-crown text-purple-600 text-3xl"></i>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900">Victornz</h1>
+      <p class="text-gray-500 text-sm mt-1">Login Member & Admin</p>
     </div>
 
-    <!-- ================= HALAMAN LOGIN ================= -->
-    <div id="login-page" class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 via-victor-900 to-gray-900 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden fade-in">
-            <div class="p-8">
-                <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-victor-100 text-victor-600 mb-4">
-                        <i class="fas fa-crown text-3xl"></i>
-                    </div>
-                    <h1 class="text-3xl font-bold text-gray-900">Victornz</h1>
-                    <p class="text-gray-500 text-sm mt-2">Masuk ke Portal Member & Admin</p>
-                </div>
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label class="text-sm font-semibold text-gray-700">Username</label>
+        <input id="username" type="text"
+          class="mt-1 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+          placeholder="username">
+      </div>
 
-                <form id="login-form" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fas fa-user"></i>
-                            </span>
-                            <input type="text" id="username" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-victor-500 focus:border-transparent outline-none transition" placeholder="Masukkan username">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                                <i class="fas fa-lock"></i>
-                            </span>
-                            <input type="password" id="password" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-victor-500 focus:border-transparent outline-none transition" placeholder="••••••••">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-victor-600 hover:bg-victor-700 text-white font-bold py-3 rounded-lg transition transform hover:scale-[1.02] shadow-lg shadow-victor-500/30">
-                        Masuk Sekarang
-                    </button>
-                </form>
+      <div>
+        <label class="text-sm font-semibold text-gray-700">Password</label>
+        <input id="password" type="password"
+          class="mt-1 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+          placeholder="••••••••">
+      </div>
 
-                <!-- Hint Login (Untuk Demo) -->
-                <div class="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-100 text-xs text-gray-500">
-                    <p class="font-bold mb-2 text-gray-700">Akun Demo (Klik untuk auto-fill):</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <!-- Owner Removed -->
-                        <button onclick="fillLogin('admin', 'admin123')" class="bg-white border hover:bg-blue-50 p-2 rounded text-center transition">
-                            <span class="block font-bold text-blue-700">Admin</span>
-                        </button>
-                        <button onclick="fillLogin('member', 'member123')" class="bg-white border hover:bg-green-50 p-2 rounded text-center transition">
-                            <span class="block font-bold text-green-700">Member</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+      <button type="submit"
+        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition shadow-lg">
+        Masuk
+      </button>
+    </form>
 
-    <!-- ================= DASHBOARD LAYOUT ================= -->
-    <div id="dashboard-layout" class="hidden flex h-full">
-        
-        <!-- Sidebar -->
-        <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-2xl z-20 transition-all duration-300 absolute md:relative transform -translate-x-full md:translate-x-0 h-full" id="sidebar">
-            <div class="p-6 flex items-center gap-3 border-b border-gray-800">
-                <i class="fas fa-crown text-victor-500 text-2xl"></i>
-                <span class="text-xl font-bold tracking-wide">Victornz</span>
-            </div>
+    <p id="loginMsg" class="text-center text-sm mt-4 text-red-500 hidden"></p>
+  </div>
 
-            <!-- Profile Widget -->
-            <div class="p-6 border-b border-gray-800 bg-gray-800/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-victor-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-lg" id="sidebar-avatar">
-                        U
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-semibold truncate w-32" id="sidebar-name">User Name</h4>
-                        <div id="sidebar-badge-container" class="mt-1">
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-gray-700 text-gray-300 font-medium" id="sidebar-role">Role</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- SCRIPT LOGIN -->
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-            <!-- Menu Navigation -->
-            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                <button onclick="switchTab('dashboard')" class="nav-item w-full text-left px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition flex items-center gap-3 active-nav bg-gray-800 text-white border-l-4 border-victor-500">
-                    <i class="fas fa-th-large w-5"></i> Dashboard
-                </button>
-                
-                <button onclick="switchTab('profile')" class="nav-item w-full text-left px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition flex items-center gap-3 border-l-4 border-transparent">
-                    <i class="fas fa-user-circle w-5"></i> Profil Saya
-                </button>
+      const u = username.value.trim();
+      const p = password.value.trim();
+      const msg = document.getElementById('loginMsg');
 
-                <!-- Menu Khusus Admin -->
-                <div id="menu-management" class="hidden">
-                    <div class="mt-6 mb-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                        <span>Manajemen</span>
-                        <div class="h-px bg-gray-700 flex-1"></div>
-                    </div>
-                    
-                    <!-- Menu Data Admin (Dihapus karena Owner dihapus) -->
-                    
-                    <!-- Admin Only -->
-                    <button id="menu-members" onclick="switchTab('members')" class="hidden nav-item w-full text-left px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition flex items-center gap-3 border-l-4 border-transparent">
-                        <i class="fas fa-users w-5"></i> Data Member
-                    </button>
-                </div>
+      msg.classList.add('hidden');
 
-                <div class="mt-auto px-4 pb-4 pt-8">
-                    <button onclick="logout()" class="w-full text-left px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 hover:text-red-300 transition flex items-center gap-3 group">
-                        <i class="fas fa-sign-out-alt w-5 group-hover:transform group-hover:-translate-x-1 transition-transform"></i> Logout
-                    </button>
-                </div>
-            </nav>
-        </aside>
+      if (!u || !p) {
+        msg.textContent = 'Username dan password wajib diisi';
+        msg.classList.remove('hidden');
+        return;
+      }
 
-        <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-full overflow-hidden bg-gray-100 relative w-full">
-            <!-- Header Mobile -->
-            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-4 md:hidden z-10">
-                <button onclick="toggleSidebar()" class="text-gray-600 focus:outline-none">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <span class="font-bold text-lg text-gray-800">Victornz</span>
-                <div class="w-6"></div> <!-- Spacer -->
-            </header>
+      google.script.run
+        .withSuccessHandler(res => {
+          if (!res.success) {
+            msg.textContent = res.message;
+            msg.classList.remove('hidden');
+            return;
+          }
 
-            <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative scroll-smooth">
-                
-                <!-- TAB: DASHBOARD (Dynamic based on role) -->
-                <section id="tab-dashboard" class="fade-in">
-                    <!-- Dashboard Header (Title / Banner) -->
-                    <div id="dashboard-header" class="mb-6">
-                        <!-- Content Injected via JS -->
-                    </div>
+          // Simpan session
+          sessionStorage.setItem('user', JSON.stringify(res.user));
 
-                    <!-- Stats Cards Container -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="stats-container">
-                        <!-- Stats akan di-inject via JS -->
-                    </div>
+          // Redirect (ganti ke dashboard kamu)
+          window.location.href = '?page=dashboard';
+        })
+        .login(u, p);
+    });
+  </script>
 
-                    <!-- Recent Activity / Content -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-                            <h3 class="font-bold text-gray-800" id="activity-title">Aktivitas Terbaru</h3>
-                            <button class="text-xs text-victor-600 hover:underline">Lihat Semua</button>
-                        </div>
-                        <div class="p-6" id="activity-content">
-                            <!-- Content injected via JS -->
-                        </div>
-                    </div>
-                </section>
-
-                <!-- TAB: PROFIL SAYA (All Roles) -->
-                <section id="tab-profile" class="hidden fade-in">
-                    <div class="max-w-2xl mx-auto">
-                        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                            <div class="h-32 bg-gradient-to-r from-victor-600 to-pink-600 relative overflow-hidden">
-                                <div class="absolute inset-0 bg-black/10"></div>
-                                <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-                            </div>
-                            <div class="px-8 pb-8 relative">
-                                <div class="w-24 h-24 rounded-full bg-white p-1 absolute -top-12 shadow-md">
-                                    <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-gray-500 overflow-hidden" id="profile-avatar-big">
-                                        <!-- Avatar Text -->
-                                    </div>
-                                </div>
-                                <div class="mt-16 flex justify-between items-end">
-                                    <div>
-                                        <h2 class="text-2xl font-bold text-gray-900" id="profile-name-display">User Name</h2>
-                                        <p class="text-gray-500 font-medium" id="profile-role-display">Role</p>
-                                    </div>
-                                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold shadow-sm">Akun Aktif</span>
-                                </div>
-
-                                <hr class="my-6 border-gray-100">
-
-                                <form id="edit-profile-form" class="space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                                        <input type="text" id="edit-name" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-victor-500 outline-none transition bg-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Email (Read Only)</label>
-                                        <input type="email" id="edit-email" readonly class="mt-1 w-full px-4 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-500 cursor-not-allowed">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Password Baru (Opsional)</label>
-                                        <input type="password" id="edit-password" placeholder="Biarkan kosong jika tidak diganti" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-victor-500 outline-none transition bg-white">
-                                    </div>
-                                    <div class="pt-4 flex justify-end">
-                                        <button type="button" onclick="saveProfile()" class="bg-victor-600 hover:bg-victor-700 text-white px-6 py-2.5 rounded-lg font-medium transition shadow-lg shadow-victor-500/30 active:scale-95 transform">
-                                            Simpan Perubahan
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- TAB: MEMBERS (Admin) -->
-                <section id="tab-members" class="hidden fade-in">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Daftar Member</h2>
-                            <p class="text-gray-500 text-sm">Total member terdaftar dalam sistem.</p>
-                        </div>
-                        <button class="bg-victor-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-victor-700 shadow-md flex items-center gap-2">
-                            <i class="fas fa-plus"></i> Tambah Member
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="members-grid">
-                        <!-- Member Cards Injected JS -->
-                    </div>
-                </section>
-
-            </div>
-        </main>
-    </div>
-
-    <script>
-        // ================= DATABASE SIMULATION =================
-        const db = {
-            users: [
-                // Owner Removed
-                { id: 2, username: 'admin', password: '123', name: 'Alex Admin', role: 'Admin', email: 'alex@victornz.com', status: 'Active' },
-                { id: 3, username: 'admin2', password: '123', name: 'Sarah Staff', role: 'Admin', email: 'sarah@victornz.com', status: 'Active' },
-                { id: 4, username: 'member', password: '123', name: 'John Member', role: 'Member', email: 'john@gmail.com', status: 'Active' },
-                { id: 5, username: 'member2', password: '123', name: 'Doe User', role: 'Member', email: 'doe@yahoo.com', status: 'Pending' },
-                { id: 6, username: 'member3', password: '123', name: 'Lisa Black', role: 'Member', email: 'lisa@gmail.com', status: 'Banned' },
-            ]
-        };
-
-        let currentUser = null;
-
-        // ================= AUTHENTICATION =================
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            
-            // Mencari user di database
-            const user = db.users.find(user => user.username === u);
-
-            // Logic Check (Simplifikasi untuk Demo)
-            let isAuthenticated = false;
-            
-            if (user) {
-                // Check password dummy (asli: user.password === p)
-                // Demo specific checks:
-                if (user.role === 'Admin' && p === 'admin123') isAuthenticated = true;
-                else if (user.role === 'Member' && p === 'member123') isAuthenticated = true;
-                // Fallback default password '123' untuk semua user di DB array
-                else if (p === '123') isAuthenticated = true;
-            }
-
-            if (isAuthenticated) {
-                loginSuccess(user);
-            } else {
-                showToast('Username atau password salah!', 'error');
-            }
-        });
-
-        function fillLogin(u, p) {
-            document.getElementById('username').value = u;
-            document.getElementById('password').value = p;
-        }
-
-        function loginSuccess(user) {
-            currentUser = user;
-            showToast(`Login Berhasil. Selamat datang, ${user.name}!`, 'success');
-            
-            // Animasi transisi
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('dashboard-layout').classList.remove('hidden');
-            
-            initializeDashboard();
-        }
-
-        function logout() {
-            currentUser = null;
-            document.getElementById('dashboard-layout').classList.add('hidden');
-            document.getElementById('login-page').classList.remove('hidden');
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            showToast('Anda telah logout.');
-        }
-
-        // ================= DASHBOARD LOGIC =================
-        function initializeDashboard() {
-            // Set Sidebar Info
-            document.getElementById('sidebar-name').innerText = currentUser.name;
-            const roleBadge = document.getElementById('sidebar-role');
-            roleBadge.innerText = currentUser.role;
-
-            // --- ROLE BADGE STYLING ---
-            roleBadge.className = 'text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider inline-block shadow-sm';
-            
-            if (currentUser.role === 'Admin') {
-                roleBadge.className += ' bg-blue-600 text-white';
-            } else {
-                roleBadge.className += ' bg-gray-700 text-gray-300';
-            }
-
-            document.getElementById('sidebar-avatar').innerText = currentUser.name.charAt(0).toUpperCase();
-
-            // Set Profile Tab Info
-            document.getElementById('profile-name-display').innerText = currentUser.name;
-            document.getElementById('profile-role-display').innerText = currentUser.role;
-            document.getElementById('profile-avatar-big').innerText = currentUser.name.charAt(0).toUpperCase();
-            document.getElementById('edit-name').value = currentUser.name;
-            document.getElementById('edit-email').value = currentUser.email;
-
-            // Configure Menu Visibility Based on Role
-            const menuManagement = document.getElementById('menu-management');
-            const menuMembers = document.getElementById('menu-members');
-
-            menuManagement.classList.add('hidden');
-            menuMembers.classList.add('hidden');
-
-            if (currentUser.role === 'Admin') {
-                menuManagement.classList.remove('hidden');
-                menuMembers.classList.remove('hidden');
-                renderAdminDashboard();
-            } else {
-                renderMemberDashboard();
-            }
-
-            // Default Tab
-            switchTab('dashboard');
-        }
-
-        // --- RENDER FUNCTIONS ---
-        // renderOwnerDashboard removed.
-
-        function renderAdminDashboard() {
-            // Header Standar
-            document.getElementById('dashboard-header').innerHTML = `
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Ringkasan Admin</h2>
-                    <p class="text-gray-500">Selamat datang kembali, mari kelola member hari ini.</p>
-                </div>
-            `;
-
-            const members = db.users.filter(u => u.role === 'Member').length;
-            const pending = db.users.filter(u => u.status === 'Pending').length;
-
-            document.getElementById('stats-container').innerHTML = `
-                ${createCard('Total Member', members, 'users', 'indigo')}
-                ${createCard('Member Baru', '+12', 'chart-line', 'blue')}
-                ${createCard('Perlu Approval', pending, 'clock', 'yellow')}
-            `;
-
-            document.getElementById('activity-title').innerText = "Aktivitas Member Terbaru";
-            document.getElementById('activity-content').innerHTML = `
-                 <ul class="space-y-3 text-sm text-gray-600">
-                    <li class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition"><i class="fas fa-check-circle text-green-500 text-lg"></i> <span><strong>John Member</strong> melakukan verifikasi email.</span></li>
-                    <li class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition"><i class="fas fa-user-plus text-blue-500 text-lg"></i> <span>Pendaftaran baru: <strong>Budi Santoso</strong>.</span></li>
-                    <li class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition"><i class="fas fa-exclamation-triangle text-yellow-500 text-lg"></i> <span>Laporan konten dari Member ID #442.</span></li>
-                </ul>
-            `;
-            
-            renderMemberList();
-        }
-
-        function renderMemberDashboard() {
-            // Header Standar
-            document.getElementById('dashboard-header').innerHTML = `
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Dashboard Saya</h2>
-                    <p class="text-gray-500">Halo, selamat datang di area member Victornz.</p>
-                </div>
-            `;
-
-            document.getElementById('stats-container').innerHTML = `
-                ${createCard('Status Akun', currentUser.status, 'id-card', 'green')}
-                ${createCard('Poin Loyalty', '150 Pts', 'star', 'yellow')}
-                ${createCard('Pesan Masuk', '2', 'envelope', 'pink')}
-            `;
-
-            document.getElementById('activity-title').innerText = "Pengumuman untuk Anda";
-            document.getElementById('activity-content').innerHTML = `
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-3 rounded-r-lg">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-info-circle text-blue-600 mt-1"></i>
-                        <div>
-                            <p class="font-bold text-blue-800">Selamat Datang di Victornz!</p>
-                            <p class="text-sm text-blue-700 mt-1">Lengkapi profil Anda untuk mendapatkan akses penuh ke semua fitur.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 border border-gray-200 rounded-lg hover:shadow-md transition bg-white">
-                    <h4 class="font-bold text-gray-800 flex items-center gap-2"><i class="fas fa-tag text-red-500"></i> Promo Member Baru</h4>
-                    <p class="text-sm text-gray-500 mt-1">Dapatkan diskon 50% untuk upgrade ke Premium bulan ini.</p>
-                </div>
-            `;
-        }
-
-        function renderMemberList() {
-            const memberList = db.users.filter(u => u.role === 'Member');
-            const grid = document.getElementById('members-grid');
-            grid.innerHTML = '';
-            
-            memberList.forEach(m => {
-                let statusColor = m.status === 'Active' ? 'bg-green-100 text-green-700' : (m.status === 'Banned' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700');
-                
-                grid.innerHTML += `
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center hover:shadow-lg transition duration-300 group">
-                        <div class="w-16 h-16 rounded-full bg-gray-100 mb-4 flex items-center justify-center text-xl font-bold text-gray-500 group-hover:bg-victor-50 group-hover:text-victor-600 transition">${m.name.charAt(0)}</div>
-                        <h3 class="font-bold text-gray-800">${m.name}</h3>
-                        <p class="text-sm text-gray-500 mb-3">${m.email}</p>
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColor} mb-4">${m.status}</span>
-                        <div class="flex gap-2 w-full mt-auto">
-                            <button class="flex-1 bg-gray-50 hover:bg-gray-200 text-gray-700 py-2 rounded-lg text-xs font-bold transition">Detail</button>
-                            ${currentUser.role === 'Admin' ? `<button class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-lg text-xs font-bold transition">Ban</button>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        // Helper: Create Stats Card
-        function createCard(title, value, icon, color) {
-            // Map simple color names to Tailwind classes for icon backgrounds
-            const colorMap = {
-                'blue': 'bg-blue-100 text-blue-600 border-blue-500',
-                'purple': 'bg-purple-100 text-purple-600 border-purple-500',
-                'green': 'bg-green-100 text-green-600 border-green-500',
-                'yellow': 'bg-yellow-100 text-yellow-600 border-yellow-500',
-                'indigo': 'bg-indigo-100 text-indigo-600 border-indigo-500',
-                'pink': 'bg-pink-100 text-pink-600 border-pink-500',
-                'red': 'bg-red-100 text-red-600 border-red-500',
-            };
-
-            const styles = colorMap[color] || colorMap['blue'];
-            const [bgClass, textClass, borderClass] = styles.split(' ');
-
-            return `
-                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 ${borderClass.replace('bg-', 'border-')} flex items-center justify-between hover:shadow-md transition cursor-default">
-                    <div>
-                        <p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">${title}</p>
-                        <h3 class="text-2xl font-bold text-gray-800">${value}</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-lg ${bgClass} ${textClass} flex items-center justify-center text-xl shadow-sm">
-                        <i class="fas fa-${icon}"></i>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ================= UTILITIES =================
-        function switchTab(tabName) {
-            // Hide all sections
-            document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
-            // Show selected section
-            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-            
-            // Update active state in sidebar
-            document.querySelectorAll('.nav-item').forEach(el => {
-                el.classList.remove('bg-gray-800', 'text-white', 'border-victor-500');
-                el.classList.add('text-gray-300', 'border-transparent');
-            });
-            
-            // Auto scroll to top
-            document.querySelector('.scroll-smooth').scrollTop = 0;
-        }
-
-        // Add active class listener for sidebar
-        document.querySelectorAll('.nav-item').forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active classes from all
-                document.querySelectorAll('.nav-item').forEach(b => {
-                    b.classList.remove('bg-gray-800', 'text-white', 'border-victor-500');
-                    b.classList.add('text-gray-300', 'border-transparent');
-                });
-                // Add to clicked
-                this.classList.remove('text-gray-300', 'border-transparent');
-                this.classList.add('bg-gray-800', 'text-white', 'border-victor-500');
-            });
-        });
-
-        function saveProfile() {
-            const newName = document.getElementById('edit-name').value;
-            const newPass = document.getElementById('edit-password').value;
-            
-            if(newName) {
-                currentUser.name = newName;
-                document.getElementById('sidebar-name').innerText = newName;
-                document.getElementById('profile-name-display').innerText = newName;
-                showToast('Profil berhasil diperbarui!', 'success');
-            }
-        }
-
-        function showToast(msg, type = 'info') {
-            const toast = document.getElementById('toast');
-            const icon = toast.querySelector('i');
-            
-            document.getElementById('toast-message').innerText = msg;
-            
-            if(type === 'error') {
-                icon.className = 'fas fa-exclamation-circle text-red-400';
-            } else if (type === 'success') {
-                icon.className = 'fas fa-check-circle text-green-400';
-            } else {
-                icon.className = 'fas fa-info-circle text-victor-400';
-            }
-
-            toast.classList.remove('translate-x-full');
-            
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
-            }, 3000);
-        }
-
-        function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            sb.classList.toggle('-translate-x-full');
-        }
-    </script>
 </body>
 </html>

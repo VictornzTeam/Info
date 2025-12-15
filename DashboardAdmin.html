@@ -66,14 +66,14 @@
 
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   
   const firebaseConfig = { /* SAMA */ };
-  initializeApp(firebaseConfig);
+  const app = initializeApp(firebaseConfig);
   
-  const auth = getAuth();
-  const db = getFirestore();
+  const auth = getAuth(app);
+  const db = getFirestore(app);
   
   onAuthStateChanged(auth, async user => {
     if (!user) {
@@ -85,10 +85,20 @@
     if (!snap.exists() || snap.data().role !== "Admin") {
       alert("Akses ditolak");
       location.href = "login.html";
+      return;
     }
+
+    // ✅ TAMPILKAN NAMA ADMIN
     document.getElementById("admin-name").innerText = snap.data().name;
   });
-  </script>
+
+  // 🔓 FUNGSI LOGOUT (INI YANG KURANG)
+  window.logout = async function () {
+    await signOut(auth);
+    location.href = "login.html";
+  };
+</script>
+
 
 
 </body>

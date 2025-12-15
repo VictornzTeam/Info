@@ -1,0 +1,57 @@
+<script>
+/* ==============================
+   MEMBER UI SCRIPT
+   Role: Member
+============================== */
+
+function setupMemberUI() {
+  // Menu yang boleh dilihat Member
+  show('menuDashboard');
+  show('menuProfilSaya');
+  show('menuDataSaya');
+  show('menuBantuan');
+
+  // Menu Admin disembunyikan
+  hide('menuMember');
+  hide('menuData');
+  hide('menuStatistik');
+  hide('menuLog');
+  hide('menuSetting');
+
+  // Default halaman
+  openMemberPage('dashboard');
+
+  console.log('Member UI Loaded');
+}
+
+/* ==============================
+   PAGE HANDLER
+============================== */
+function openMemberPage(page) {
+  hideAllPages();
+
+  if (page === 'dashboard') show('pageDashboard');
+  if (page === 'profil') show('pageProfilSaya');
+  if (page === 'data') show('pageDataSaya');
+  if (page === 'bantuan') show('pageBantuan');
+}
+
+/* ==============================
+   HELPER
+============================== */
+function show(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'block';
+}
+
+function hide(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+function hideAllPages() {
+  document.querySelectorAll('.page').forEach(p => {
+    p.style.display = 'none';
+  });
+}
+</script>

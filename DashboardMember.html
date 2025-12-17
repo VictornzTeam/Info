@@ -149,8 +149,34 @@
       return;
     }
 
-    document.getElementById("member-name").innerText =
-      snap.data().name || "Member";
+    const data = snap.data();
+
+// Nama
+document.getElementById("member-name").innerText = data.name || "Member";
+document.getElementById("profile-name").innerText = data.name || "-";
+
+// Email
+document.getElementById("profile-email").innerText = data.email || "-";
+
+// WhatsApp
+document.getElementById("profile-wa").innerText = data.whatsapp || "-";
+
+// About
+document.getElementById("profile-about").innerText =
+  data.about || "Belum ada deskripsi.";
+
+// Skills (array → text)
+document.getElementById("profile-skills").innerText =
+  (data.skills || []).join(", ") || "-";
+
+// Games
+document.getElementById("profile-games").innerText =
+  (data.games || []).join(", ") || "-";
+
+// Minecraft Avatar (KEPALA)
+const mcName = data.minecraftUsername || "Steve";
+document.getElementById("mc-avatar").src =
+  `https://mc-heads.net/avatar/${mcName}/128`;
   });
 
   // ✅ ABSEN BULANAN

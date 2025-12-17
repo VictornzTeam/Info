@@ -91,6 +91,28 @@
   </div>
 </div>
 
+<!-- PROFILE CARD -->
+<div class="bg-white rounded-xl shadow p-6 mt-6 flex flex-col md:flex-row gap-6 items-center">
+
+  <!-- FOTO PROFIL MINECRAFT -->
+  <img id="mc-avatar"
+       src="https://mc-heads.net/avatar/Steve/128"
+       alt="Minecraft Avatar"
+       class="w-28 h-28 rounded-lg border-4 border-yellow-400 bg-gray-100"/>
+
+  <!-- INFO PROFIL -->
+  <div class="flex-1 space-y-2">
+    <h3 class="text-xl font-bold text-gray-800" id="profile-name">Nama Member</h3>
+    <p class="text-sm text-gray-500" id="profile-email">email@email.com</p>
+    <p class="text-sm">📱 WhatsApp: <span id="profile-wa">-</span></p>
+    <p class="text-sm">🧠 Keahlian: <span id="profile-skills">-</span></p>
+    <p class="text-sm">🎮 Game: <span id="profile-games">-</span></p>
+    <p class="text-sm text-gray-600 italic" id="profile-about">Tentang saya...</p>
+  </div>
+
+</div>
+
+  
 <!-- ================= FIREBASE LOGIC (TIDAK DIUBAH) ================= -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";

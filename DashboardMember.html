@@ -22,15 +22,18 @@
 
 <div class="flex h-screen overflow-hidden">
 
-  <!-- Overlay Mobile -->
-  <div id="sidebarOverlay" onclick="toggleSidebar()" 
-       class="fixed inset-0 z-20 bg-black/50 hidden lg:hidden"></div>
-
+    <!-- Overlay Mobile -->
+  <div id="sidebarOverlay"
+       class="fixed inset-0 z-20 bg-black/50 hidden lg:hidden"
+       onclick="closeSidebar()">
+  </div>
+  
   <!-- SIDEBAR -->
   <aside id="sidebar"
     class="fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white
-           transform -translate-x-full transition lg:translate-x-0
-           lg:static flex flex-col">
+           transform -translate-x-full transition-transform duration-300
+           lg:translate-x-0 lg:static lg:inset-auto
+           flex flex-col">  
 
     <!-- Logo -->
     <div class="h-16 flex items-center justify-center bg-slate-950 border-b border-slate-800">
@@ -153,11 +156,35 @@
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebarOverlay");
 
-  function toggleSidebar() {
-    sidebar.classList.toggle("-translate-x-full");
-    overlay.classList.toggle("hidden");
+  function openSidebar() {
+    sidebar.classList.remove("-translate-x-full");
+    overlay.classList.remove("hidden");
   }
+
+  function closeSidebar() {
+    sidebar.classList.add("-translate-x-full");
+    overlay.classList.add("hidden");
+  }
+
+  function toggleSidebar() {
+    if (sidebar.classList.contains("-translate-x-full")) {
+      openSidebar();
+    } else {
+      closeSidebar();
+    }
+  }
+
+  // 🔒 AUTO CLOSE SAAT RESIZE KE DESKTOP
+  window.addEventListener("resize", () => {
+    if (window.innerWidth >= 1024) {
+      overlay.classList.add("hidden");
+      sidebar.classList.remove("-translate-x-full");
+    } else {
+      sidebar.classList.add("-translate-x-full");
+    }
+  });
 </script>
+
 
 </body>
 </html>

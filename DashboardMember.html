@@ -169,11 +169,15 @@ document.getElementById("profile-about").innerText =
 
 // Skills (array → text)
 document.getElementById("profile-skills").innerText =
-  (data.skills || []).join(", ") || "-";
+  Array.isArray(data.skills)
+    ? data.skills.join(", ")
+    : data.skills || "-";
 
 // Games
 document.getElementById("profile-games").innerText =
-  (data.games || []).join(", ") || "-";
+  Array.isArray(data.games)
+    ? data.games.join(", ")
+    : data.games || "-";
 
 // Minecraft Avatar (KEPALA)
 const mcName = data.minecraftUsername || "Steve";

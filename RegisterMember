@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Register Victornz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #facc15, #fde047);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    .box {
+      background: white;
+      padding: 32px;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 15px 30px rgba(0,0,0,.15);
+      text-align: center;
+    }
+    h2 {
+      color: #92400e;
+      margin-bottom: 6px;
+    }
+    p {
+      color: #78350f;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: 1px solid #facc15;
+      font-size: 14px;
+    }
+    input:focus {
+      border-color: #f59e0b;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      background: #f59e0b;
+      color: white;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #d97706;
+    }
+    .footer {
+      margin-top: 14px;
+      font-size: 12px;
+    }
+    a {
+      color: #92400e;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <div class="box">
+    <h2>Victornz</h2>
+    <p>Daftar akun baru</p>
+
+    <input id="name" type="text" placeholder="Nama Lengkap">
+    <input id="email" type="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="register()">Daftar</button>
+
+    <div class="footer">
+      Sudah punya akun? <a href="login.html">Login</a>
+    </div>
+  </div>
+
+<script>
+  const supabaseUrl = "https://guhtxeycuhtczoehfzz.supabase.co";
+  const supabaseKey = "sb_publishable_wZUYKQIrWfNaXAbQW1eJtA_VzTrw9LO";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  async function register() {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (!name || !email || !password) {
+      alert("Semua field wajib diisi");
+      return;
+    }
+
+    // 🔐 Register Auth
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password
+    });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    const user = data.user;
+
+    // 📦 Insert Profile
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        name: name,
+        role: "Member"
+      });
+
+    if (profileError) {
+      alert("Gagal membuat profile");
+      console.error(profileError);
+      return;
+    }
+
+    alert("Registrasi berhasil 🎉");
+    location.href = "member.html";
+  }
+</script>
+
+</body>
+</html>

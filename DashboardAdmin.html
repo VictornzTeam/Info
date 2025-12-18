@@ -63,46 +63,47 @@
     <button type="button" onclick="logout()">Logout</button>
   </main>
 
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  
-  const firebaseConfig = {
-    apiKey: "AIzaSyAJjm8a7AAUjSWaeTKXI6Tr7l9HBQJttyk",
-    authDomain: "victornz-database.firebaseapp.com",
-    projectId: "victornz-database",
-    storageBucket: "victornz-database.appspot.com",
-    messagingSenderId: "200672722714",
-    appId: "1:200672722714:web:870346cbe0a4c0de5b76a3"
-  };
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = "https://guhtxeycuhtczoehfzz.supabase.co";
+  const supabaseKey = "sb_publishable_wZUYKQIrWfNaXAbQW1eJtA_VzTrw9LO";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  onAuthStateChanged(auth, async user => {
+  async function loadAdmin() {
+    // 🔐 CEK LOGIN
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       location.href = "login.html";
       return;
     }
 
-    const snap = await getDoc(doc(db, "users", user.uid));
-    if (!snap.exists() || snap.data().role !== "Admin") {
+    // 📦 CEK ROLE
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("name, role")
+      .eq("id", user.id)
+      .single();
+
+    if (error || profile.role !== "Admin") {
       alert("Akses ditolak");
       location.href = "login.html";
       return;
     }
 
+    // 🧑 TAMPILKAN NAMA ADMIN
     document.getElementById("admin-name").innerText =
-      snap.data().name || "Admin";
-  });
+      profile.name || "Admin";
+  }
 
-  window.logout = async function () {
-    await signOut(auth);
+  loadAdmin();
+
+  // 🔓 LOGOUT
+  async function logout() {
+    await supabase.auth.signOut();
     location.href = "login.html";
-  };
+  }
 </script>
+
 
 </body>
 </html>

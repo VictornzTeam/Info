@@ -63,47 +63,48 @@
     <button type="button" onclick="logout()">Logout</button>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const supabaseUrl = "https://guhtxeycuhtczoehfzz.supabase.co";
   const supabaseKey = "sb_publishable_wZUYKQIrWfNaXAbQW1eJtA_VzTrw9LO";
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  async function loadAdmin() {
+  async function protectAdminPage() {
     // 🔐 CEK LOGIN
     const { data: { user } } = await supabase.auth.getUser();
+
     if (!user) {
-      location.href = "login.html";
+      location.replace("login.html");
       return;
     }
 
-    // 📦 CEK ROLE
+    // 📦 AMBIL ROLE
     const { data: profile, error } = await supabase
       .from("profiles")
       .select("name, role")
       .eq("id", user.id)
       .single();
 
+    // 🚫 BLOK JIKA BUKAN ADMIN
     if (error || profile.role !== "Admin") {
-      alert("Akses ditolak");
-      location.href = "login.html";
+      await supabase.auth.signOut();
+      alert("Akses Admin Ditolak");
+      location.replace("login.html");
       return;
     }
 
-    // 🧑 TAMPILKAN NAMA ADMIN
+    // ✅ TAMPILKAN NAMA ADMIN
     document.getElementById("admin-name").innerText =
       profile.name || "Admin";
   }
 
-  loadAdmin();
+  protectAdminPage();
 
-  // 🔓 LOGOUT
   async function logout() {
     await supabase.auth.signOut();
     location.href = "login.html";
   }
 </script>
-
 
 </body>
 </html>

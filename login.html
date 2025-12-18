@@ -77,68 +77,47 @@
     }
   </style>
 
-  <!-- FIREBASE SCRIPT -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = "https://guhtxeycuhtczoehfzz.supabase.co";
+  const supabaseKey = "sb_publishable_wZUYKQIrWfNaXAbQW1eJtA_VzTrw9LO";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAJjm8a7AAUjSWaeTKXI6Tr7l9HBQJttyk",
-      authDomain: "victornz-database.firebaseapp.com",
-      projectId: "victornz-database",
-      storageBucket: "victornz-database.firebasestorage.app",
-      messagingSenderId: "200672722714",
-      appId: "1:200672722714:web:870346cbe0a4c0de5b76a3"
-    };
+  async function login(email, password) {
+    // 🔐 LOGIN
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    async function loginAs(expectedRole) {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (!email || !password) {
-        alert("Email dan password wajib diisi");
-        return;
-      }
-
-      try {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        const uid = cred.user.uid;
-
-        const snap = await getDoc(doc(db, "users", uid));
-        if (!snap.exists()) {
-          alert("Data user tidak ditemukan");
-          return;
-        }
-
-        const { role } = snap.data();
-
-        // 🔐 VALIDASI ROLE SESUAI TOMBOL
-        if (role !== expectedRole) {
-          alert("Akses ditolak. Akun ini bukan " + expectedRole);
-          return;
-        }
-
-        // 🔀 REDIRECT
-        if (role === "Admin") {
-          location.href = "DashboardAdmin.html";
-        } else {
-          location.href = "DashboardMember.html";
-        }
-
-      } catch (err) {
-        alert("Login gagal: email atau password salah");
-        console.error(err);
-      }
+    if (error) {
+      alert(error.message);
+      return;
     }
 
-    window.loginAdmin = () => loginAs("Admin");
-    window.loginMember = () => loginAs("Member");
-  </script>
+    const user = data.user;
+
+    // 📦 Ambil role dari profiles
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile) {
+      alert("Profile tidak ditemukan");
+      return;
+    }
+
+    // 🚀 REDIRECT BERDASARKAN ROLE
+    if (profile.role === "Admin") {
+      location.href = "admin.html";
+    } else {
+      location.href = "member.html";
+    }
+  }
+</script>
+
 </head>
 
 <body>

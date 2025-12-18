@@ -111,8 +111,27 @@
         Tentang saya...
       </p>
     </div>
-
   </div>
+  <div class="bg-white rounded-xl shadow p-6">
+  <h3 class="text-lg font-bold mb-4">Edit Profil</h3>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <input id="edit-name" class="border p-2 rounded" placeholder="Nama">
+    <input id="edit-wa" class="border p-2 rounded" placeholder="WhatsApp">
+    <input id="edit-skills" class="border p-2 rounded" placeholder="Keahlian">
+    <input id="edit-games" class="border p-2 rounded" placeholder="Game">
+    <input id="edit-server" class="border p-2 rounded" placeholder="Server">
+  </div>
+
+  <textarea id="edit-about"
+    class="border p-2 rounded w-full mt-4"
+    placeholder="Tentang saya..."></textarea>
+
+  <button onclick="saveProfile()"
+    class="mt-4 bg-yellow-500 text-white px-4 py-2 rounded">
+    Simpan Profil
+  </button>
+</div>
 
 </main>
   
@@ -221,6 +240,36 @@ if (profile.role !== "Member") {
       sidebar.classList.add("-translate-x-full");
     }
   });
+</script>
+<script>
+async function saveProfile() {
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    alert("Belum login");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      name: document.getElementById("edit-name").value,
+      whatsapp: document.getElementById("edit-wa").value,
+      skills: document.getElementById("edit-skills").value,
+      games: document.getElementById("edit-games").value,
+      server_played: document.getElementById("edit-server").value,
+      about: document.getElementById("edit-about").value
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    alert("Gagal menyimpan profil");
+    console.error(error);
+  } else {
+    alert("Profil berhasil disimpan ✅");
+    location.reload();
+  }
+}
 </script>
 
 

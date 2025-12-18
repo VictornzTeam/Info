@@ -116,101 +116,78 @@
 
 </main>
   
-<!-- ================= FIREBASE LOGIC (TIDAK DIUBAH) ================= -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = "https://guhtxeycuhtczoehfzz.supabase.co";
+  const supabaseKey = "sb_publishable_wZUYKQIrWfNaXAbQW1eJtA_VzTrw9LO";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAJjm8a7AAUjSWaeTKXI6Tr7l9HBQJttyk",
-    authDomain: "victornz-database.firebaseapp.com",
-    projectId: "victornz-database",
-    storageBucket: "victornz-database.firebasestorage.app",
-    messagingSenderId: "200672722714",
-    appId: "1:200672722714:web:870346cbe0a4c0de5b76a3"
-  };
+  async function loadMember() {
+    // 🔐 Ambil user login
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  // 🔒 PROTEKSI MEMBER
-  onAuthStateChanged(auth, async user => {
     if (!user) {
       location.href = "login.html";
       return;
     }
 
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
+    // 📦 Ambil data profile
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
-    if (!snap.exists() || snap.data().role !== "Member") {
+    if (error || !data) {
+      alert("Profile tidak ditemukan");
+      return;
+    }
+
+    // 🚫 Proteksi role
+    if (data.role !== "Member") {
       alert("Akses ditolak");
       location.href = "login.html";
       return;
     }
 
-    const data = snap.data();
+    // 🧩 Isi data ke UI
+    document.getElementById("member-name").innerText = data.name || "Member";
+    document.getElementById("profile-name").innerText = data.name || "-";
+    document.getElementById("profile-email").innerText = data.email || "-";
+    document.getElementById("profile-wa").innerText = data.whatsapp || "-";
+    document.getElementById("profile-about").innerText = data.about || "-";
+    document.getElementById("profile-skills").innerText = data.skills || "-";
+    document.getElementById("profile-games").innerText = data.games || "-";
+    document.getElementById("profile-servers").innerText = data.server_played || "-";
 
-// Nama
-document.getElementById("member-name").innerText = data.name || "Member";
-document.getElementById("profile-name").innerText = data.name || "-";
+    document.getElementById("mc-avatar").src =
+      data.avatar_url || "https://via.placeholder.com/128";
+  }
 
-// Email
-document.getElementById("profile-email").innerText = data.email || "-";
-
-// WhatsApp
-document.getElementById("profile-wa").innerText = data.whatsapp || "-";
-
-// About
-document.getElementById("profile-about").innerText =
-  data.about || "Belum ada deskripsi.";
-
-// Skills (array → text)
-document.getElementById("profile-skills").innerText =
-  Array.isArray(data.skills)
-    ? data.skills.join(", ")
-    : data.skills || "-";
-    
-// Servers yang dimainkan
-document.getElementById("profile-servers").innerText =
-  Array.isArray(data.servers)
-    ? data.servers.join(", ")
-    : data.servers || "-";
-
-// Games
-document.getElementById("profile-games").innerText =
-  Array.isArray(data.games)
-    ? data.games.join(", ")
-    : data.games || "-";
-
-// Minecraft Avatar (KEPALA)
-const mcName = data.minecraftUsername || "Steve";
-document.getElementById("mc-avatar").src =
-  `https://mc-heads.net/avatar/${mcName}/128`;
-  });
-
-  // ✅ ABSEN BULANAN
-  window.absen = async function () {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    await updateDoc(doc(db, "users", user.uid), {
-      lastAbsen: serverTimestamp(),
-      status: "Active"
-    });
-
-    alert("Absen berhasil dicatat 👍");
-  };
+  loadMember();
 
   // 🔓 LOGOUT
-  window.logout = async function () {
-    await signOut(auth);
+  async function logout() {
+    await supabase.auth.signOut();
     location.href = "login.html";
-  };
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+if (!user) location.href = "login.html";
+
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+  .single();
+
+if (profile.role !== "Member") {
+  alert("Akses ditolak");
+  location.href = "login.html";
+}
+
 </script>
+
 
 <!-- SIDEBAR TOGGLE -->
 <script>
